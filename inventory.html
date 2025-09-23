@@ -14,28 +14,42 @@
       <a href="import.html" class="btn">Add Item</a>
     </nav>
   </header>
+<main class="container">
+  <section class="card">
+    <div class="inventory-controls" style="flex-direction: column; gap: 10px;">
 
-  <main class="container">
-    <section class="card">
-     <div class="inventory-controls">
-  <div style="display:flex; gap:8px; align-items:center;">
-    <button id="exportCsv" class="primary">Export CSV</button>
-    
-    <!-- زر الفرز -->
-    <select id="sortOptions" class="muted" style="padding:8px; border-radius:8px;">
-      <option value="">Sort By</option>
-      <option value="date">Date (Newest First)</option>
-      <option value="type">Product Type</option>
-      <option value="size">Size</option>
-    </select>
-  </div>
-  
-  <button id="clearAll" class="danger">Clear Inventory</button>
-</div>
+      <!-- ===== أزرار الفلترة ===== -->
+      <div class="type-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
+        <button class="chip active" data-filter="">All</button>
+        <button class="chip" data-filter="Shirt">Shirt</button>
+        <button class="chip" data-filter="Pants">Pants</button>
+        <button class="chip" data-filter="Jacket">Jacket</button>
+        <button class="chip" data-filter="Coverall">Coverall</button>
+        <button class="chip" data-filter="Lapcod">lapcod</button>
+      </div>
 
-      <div id="inventoryList"></div>
-    </section>
-  </main>
+      <!-- ===== أزرار التصدير والفرز ===== -->
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="exportCsv" class="primary">Export CSV</button>
+
+        <select id="sortOptions" class="muted" style="padding:8px; border-radius:8px;">
+          <option value="">Sort By</option>
+          <option value="date">Date (Newest First)</option>
+          <option value="type">Product Type</option>
+          <option value="size">Size</option>
+        </select>
+      </div>
+
+      <!-- ===== زر مسح المخزن ===== -->
+      <button id="clearAll" class="danger">Clear Inventory</button>
+
+    </div>
+
+    <!-- ===== قائمة المخزن ===== -->
+    <div id="inventoryList"></div>
+  </section>
+</main>
+
 
   <!-- ===== Modal for PIN Confirmation ===== -->
   <div id="pinModal" class="modal">
