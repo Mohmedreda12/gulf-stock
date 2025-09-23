@@ -149,6 +149,41 @@
     });
   }
 
+
+  // ===== Sorting Inventory =====
+const sortSelect = document.getElementById('sortOptions');
+
+function sortInventory(criteria) {
+  const inv = loadInventory();
+
+  if (criteria === 'date') {
+    // فرز حسب التاريخ (الأحدث أولاً)
+    inv.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+  } 
+  else if (criteria === 'type') {
+    // فرز حسب نوع المنتج أبجديًا
+    inv.sort((a, b) => a.type.localeCompare(b.type));
+  } 
+  else if (criteria === 'size') {
+    // فرز حسب المقاس
+    inv.sort((a, b) => a.size.localeCompare(b.size));
+  }
+
+  saveInventory(inv);   // حفظ الترتيب بعد الفرز
+  renderInventory();    // إعادة عرض المخزون
+}
+
+// عند اختيار طريقة فرز
+if (sortSelect) {
+  sortSelect.addEventListener('change', () => {
+    const selected = sortSelect.value;
+    if (selected) {
+      sortInventory(selected);
+    }
+  });
+}
+
+
   // ------- Handlers -------
   // Import (Add)
   if (addBtn) {
@@ -165,11 +200,29 @@
 
       const item = { type, code, color, size, qty, notes, addedAt: new Date().toISOString() };
       mergeAndAdd(item);
-      alert('Added to inventory.');
+      showSuccess('Added to inventory.');
       document.getElementById('importForm')?.reset();
       populateSizesFor(productType.value);
     });
   }
+  
+// ===== Notify helpers =====
+function showSuccess(text){
+  const root = document.getElementById('notifyRoot');
+  if(!root) return;
+  root.innerHTML = `
+    <div class="notify-badge">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="11" stroke="#28a745" stroke-width="2"/>
+        <!-- Check-like arrow -->
+        <path d="M7 12.5l3.2 3.2L17 9" stroke="#28a745" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="msg">${text}</span>
+    </div>`;
+  root.classList.add('show');
+  setTimeout(()=> root.classList.remove('show'), 1200);
+}
+
 
   // Export (Subtract)
   if (removeBtn) {
@@ -186,7 +239,7 @@
 
       const ok = subtractFromInventory({ type, code, color, size, qty, notes });
       if (ok) {
-        alert('Quantity deducted.');
+        showSuccess('Quantity deducted.');
         document.getElementById('exportForm')?.reset();
         populateSizesFor(productType.value);
       }
@@ -218,13 +271,39 @@
     });
   }
 
-  // Clear all
-  if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', () => {
-      if (confirm('Clear inventory permanently?')) {
-        localStorage.removeItem(STORAGE_KEY);
-        renderInventory();
+if (clearAllBtn) {
+  clearAllBtn.addEventListener('click', () => {
+    const modal = document.getElementById('pinModal');
+    const pinInput = document.getElementById('pinInput');
+    const pinCancel = document.getElementById('pinCancel');
+    const pinConfirm = document.getElementById('pinConfirm');
+
+    // افتح المودال
+    modal.style.display = 'flex';
+    pinInput.value = '';
+    pinInput.focus();
+
+    // لو ضغط Cancel
+    pinCancel.onclick = () => {
+      modal.style.display = 'none';
+    };
+
+    // لو ضغط Confirm
+    pinConfirm.onclick = () => {
+      const correctPIN = '1234';
+      if (pinInput.value === correctPIN) {
+        if (confirm('Are you sure you want to clear the entire inventory?')) {
+          localStorage.removeItem(STORAGE_KEY);
+          renderInventory();
+          alert('Inventory cleared successfully.');
+          modal.style.display = 'none';
+        }
+      } else {
+        alert('Incorrect PIN. Action cancelled.');
       }
-    });
-  }
+    };
+  });
+}
+
+
 })();
