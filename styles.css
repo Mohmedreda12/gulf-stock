@@ -1,0 +1,107 @@
+:root{
+  --bg:#0b0b0b;
+  --card:#f7fbff;
+  --accent:#123e7a;
+  --muted:#e9eef6;
+  --glass: rgba(255,255,255,0.9);
+}
+
+/* ========== Base ========== */
+*{box-sizing:border-box;font-family:Segoe UI, Tahoma, Arial;direction:rtl}
+
+/* خلفية موحّدة لكل الصفحات + Overlay غامق بسيط */
+body{
+  margin:0;
+  /* الترتيب مهم: التدرّج (أعلى) فوق الصورة كـ Overlay */
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75)),
+    url('images/1.jpg') center / cover no-repeat fixed;
+  color:#0b0b0b;
+  min-height:100vh;
+}
+
+/* للشاشات الصغيرة: تقدر تغيّر الصورة لو حابب */
+@media (max-width:480px){
+  body{
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75)),
+      url('images/1.jpg') center / cover no-repeat fixed;
+  }
+}
+
+/* للتابلت */
+@media (min-width:481px) and (max-width:1024px){
+  body{
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75)),
+      url('images/1.jpg') center / cover no-repeat fixed;
+  }
+}
+
+/* ========== Header / Buttons ========== */
+.topbar{
+  background:var(--accent);
+  color:white;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between
+}
+.topbar h1{margin:0;font-size:18px}
+.topbar .btn{
+  color:white;text-decoration:none;padding:8px 12px;border-radius:8px;
+  background:rgba(255,255,255,0.06);margin-left:8px
+}
+
+/* ========== Layout ========== */
+.center{display:flex;align-items:center;justify-content:center;padding:60px 10px}
+.hero{
+  background:var(--glass);max-width:900px;padding:40px;border-radius:12px;text-align:center
+}
+.big-btn{
+  display:inline-block;margin-top:20px;padding:16px 28px;border-radius:14px;
+  background:var(--accent);color:white;text-decoration:none
+}
+.container{padding:30px}
+.card{
+  background:linear-gradient(180deg,#f3f7fb,#eef5fb);
+  padding:28px;border-radius:14px;box-shadow:0 10px 30px rgba(10,30,80,0.12)
+}
+
+/* ========== Form ========== */
+.row{display:flex;flex-direction:column;margin-bottom:14px}
+.row label{font-weight:700;color:#123e7a;margin-bottom:6px}
+.row input,.row select{
+  padding:12px;border-radius:12px;border:1px solid rgba(18,62,122,0.08);font-size:16px
+}
+.actions{display:flex;gap:12px;align-items:center;margin-top:10px}
+.primary{background:var(--accent);color:white;padding:12px 20px;border-radius:12px;border:none}
+.muted{background:transparent;padding:12px 20px;border-radius:12px;border:1px solid rgba(0,0,0,0.05)}
+.secondary{background:#fff;padding:12px 20px;border-radius:12px;text-decoration:none;color:var(--accent)}
+.hint{color:#6b7b95;margin-top:12px}
+
+/* ========== Inventory List ========== */
+.inventory-controls{
+  display:flex;gap:12px;justify-content:space-between;align-items:center;margin-bottom:12px
+}
+#inventoryList{margin-top:8px}
+.item{
+  background:white;padding:12px;border-radius:10px;margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06)
+}
+.item .meta{display:flex;flex-direction:column;gap:4px}
+.item .actions{gap:8px}
+.danger{background:#b22222;color:white;padding:8px 12px;border-radius:8px;border:none}
+
+/* ========== Responsive ========== */
+@media (max-width:700px){
+  .hero{padding:18px}
+  .card{padding:18px}
+  .topbar h1{font-size:16px}
+}
+
+/* تحسّن بسيط لشفافية الكارد فوق الخلفية الداكنة */
+@media (prefers-color-scheme: light){
+  .card{backdrop-filter:saturate(120%) contrast(1.02)}
+}

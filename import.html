@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add to Inventory — Import</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Add to Inventory</h1>
+    <nav>
+      <a href="index.html" class="btn">Home</a>
+      <a href="inventory.html" class="btn">Inventory</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <form id="importForm" class="card" autocomplete="off">
+      <div class="row">
+        <label>Product type</label>
+        <select id="productType" required>
+          <option value="Shirt">Shirt</option>
+          <option value="Pants">Pants</option>
+          <option value="Jacket">Jacket</option>
+          <option value="Coverall">Coverall</option>
+          <option value="Lapcod">lapcod</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>Internal code (e.g., S01, P10)</label>
+        <input id="code" placeholder="Enter code" required />
+      </div>
+
+      <div class="row">
+        <label>Color (optional)</label>
+        <input id="color" placeholder="e.g., B01" />
+      </div>
+
+      <div class="row">
+        <label>Size</label>
+        <select id="size" required></select>
+      </div>
+
+      <div class="row">
+        <label>Quantity</label>
+        <input id="qty" type="number" value="1" min="1" required />
+      </div>
+
+      <div class="row">
+        <label>Notes (optional)</label>
+        <input id="notes" placeholder="Any extra details" />
+      </div>
+
+      <div class="actions">
+        <button type="button" id="addBtn" class="primary">Add</button>
+        <button type="reset" id="resetBtn" class="muted">Reset</button>
+        <a id="toInventory" href="inventory.html" class="secondary">Inventory</a>
+      </div>
+
+      <p class="hint">Data will be merged by: Product type + Code + Color + Size</p>
+    </form>
+  </main>
+
+  <script src="common.js"></script>
+</body>
+</html>

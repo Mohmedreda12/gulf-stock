@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المخزون — Inventory</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>قائمة المخزون</h1>
+    <nav>
+      <a href="index.html" class="btn">الرئيسية</a>
+      <a href="import.html" class="btn">تسجيل</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="inventory-controls">
+        <button id="exportCsv" class="primary">تصدير CSV</button>
+        <button id="clearAll" class="danger">تفريغ المخزون</button>
+      </div>
+
+      <div id="inventoryList"></div>
+    </section>
+  </main>
+
+  <script src="common.js"></script>
+</body>
+</html>
