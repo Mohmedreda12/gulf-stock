@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Clothing Inventory System — Home</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+  if(localStorage.getItem('loggedIn') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
 </head>
 <body>
   <header class="topbar">
@@ -31,5 +36,7 @@
   <footer class="footer">
    <div id="notifyRoot"></div>
   </footer>
+  <script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/common.js"></script>
 </body>
 </html>

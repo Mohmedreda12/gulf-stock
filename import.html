@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Add to Inventory — Import</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+  if(localStorage.getItem('loggedIn') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
 </head>
 <body>
   <header class="topbar">
@@ -24,7 +29,7 @@
           <option value="Pants">Pants</option>
           <option value="Jacket">Jacket</option>
           <option value="Coverall">Coverall</option>
-          <option value="Lapcod">lapcod</option>
+          <option value="Lapcod">Lapcod</option>
         </select>
       </div>
 
@@ -91,6 +96,7 @@
     </form>
   </main>
    <div id="notifyRoot"></div>
-  <script src="common.js"></script>
+ <script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/common.js"></script>
 </body>
 </html>

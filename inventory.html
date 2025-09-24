@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Inventory — Inventory List</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+  if(localStorage.getItem('loggedIn') !== 'true') {
+    window.location.href = 'login.html';
+  }
+</script>
 </head>
 <body>
   <header class="topbar">
@@ -39,6 +44,16 @@
           <option value="size">Size</option>
         </select>
       </div>
+      <select id="fabricFilter" class="muted" style="padding:6px; border-radius:8px; margin-top:8px;">
+  <option value="">Select Fabric</option>
+  <option value="Nomex">Nomex</option>
+  <option value="Cotton">Cotton</option>
+  <option value="Lenzing">Lenzing</option>
+  <option value="Normal">Normal</option>
+  <option value="Stretch">Stretch</option>
+  <option value="Arc Flash">Arc Flash</option>
+  <option value="Lenzing Arc Flash">Lenzing Arc Flash</option>
+</select>
 
       <!-- ===== زر مسح المخزن ===== -->
       <button id="clearAll" class="danger">Clear Inventory</button>
@@ -66,6 +81,7 @@
 
 
   <div id="notifyRoot"></div>
-  <script src="common.js"></script>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/common.js"></script>
 </body>
 </html>
