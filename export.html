@@ -6,12 +6,14 @@
   <title>Export from Inventory</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
+    // حماية بسيطة: لازم تسجيل دخول
     if (localStorage.getItem('loggedIn') !== 'true') {
       window.location.href = 'login.html';
     }
   </script>
 </head>
 <body>
+  <!-- ===== شريط علوي ===== -->
   <header class="topbar">
     <h1>Export from Inventory</h1>
     <nav>
@@ -21,11 +23,14 @@
     </nav>
   </header>
 
+  <!-- ===== محتوى الصفحة ===== -->
   <main class="container">
     <form id="exportForm" class="card" autocomplete="off">
+      
+      <!-- نوع المنتج -->
       <div class="row">
-        <label>Product type</label>
-        <select id="productType" required>
+        <label for="productType">Product type</label>
+        <select id="productType" name="productType" required>
           <option value="Shirt">Shirt</option>
           <option value="Pants">Pants</option>
           <option value="Jacket">Jacket</option>
@@ -34,14 +39,16 @@
         </select>
       </div>
 
+      <!-- الكود الداخلي -->
       <div class="row">
-        <label>Internal code (e.g., S01, P10)</label>
-        <input id="code" placeholder="Enter code" />
+        <label for="code">Internal code (e.g., S01, P10)</label>
+        <input id="code" name="code" placeholder="Enter code" />
       </div>
 
+      <!-- اللون -->
       <div class="row">
-        <label>Color (optional)</label>
-        <select id="color">
+        <label for="color">Color (optional)</label>
+        <select id="color" name="color">
           <option value="">Select Color</option>
           <option value="MID BLUE">MID BLUE</option>
           <option value="LIGHT TAN">LIGHT TAN</option>
@@ -58,9 +65,10 @@
         </select>
       </div>
 
+      <!-- نوع القماش -->
       <div class="row">
-        <label>Fabric Type</label>
-        <select id="fabric">
+        <label for="fabric">Fabric Type (optional)</label>
+        <select id="fabric" name="fabric">
           <option value="">Select Fabric</option>
           <option value="NOMEX">NOMEX</option>
           <option value="COTTON">COTTON</option>
@@ -72,37 +80,49 @@
         </select>
       </div>
 
+      <!-- المقاس -->
       <div class="row">
-        <label>Size</label>
-        <!-- إدخال يدوي مع اقتراحات -->
-        <input id="size" placeholder="e.g. M, XL, 2XL or 36..60" required list="sizeHints" />
+        <label for="size">Size</label>
+        <input id="size" name="size" placeholder="e.g. M, XL, 2XL or 36..60" required list="sizeHints" />
         <datalist id="sizeHints">
+          <!-- مقاسات بالحروف -->
           <option value="M"><option value="L"><option value="XL">
           <option value="2XL"><option value="3XL"><option value="4XL"><option value="5XL"><option value="6XL">
-          <option value="36"><option value="38"><option value="40"><option value="42"><option value="44">
-            <option value="46"><option value="48"><option value="50"><option value="52"><option value="54">
-                <option value="56"><option value="58"><option value="60">
 
+          <!-- مقاسات من 4 إلى 34 -->
+          <option value="4"><option value="6"><option value="8"><option value="10">
+          <option value="12"><option value="14"><option value="16"><option value="18">
+          <option value="20"><option value="22"><option value="24"><option value="26">
+          <option value="28"><option value="30"><option value="32"><option value="34">
+
+          <!-- مقاسات من 36 إلى 60 -->
+          <option value="36"><option value="38"><option value="40"><option value="42">
+          <option value="44"><option value="46"><option value="48"><option value="50">
+          <option value="52"><option value="54"><option value="56"><option value="58"><option value="60">
         </datalist>
       </div>
 
+      <!-- الكمية المراد خصمها -->
       <div class="row">
-        <label>Quantity</label>
-        <input id="qty" type="number" value="1" min="1" required />
+        <label for="qty">Quantity to Export</label>
+        <input id="qty" name="qty" type="number" value="1" min="1" required />
       </div>
 
+      <!-- ملاحظات -->
       <div class="row">
-        <label>Notes (optional)</label>
-        <input id="notes" placeholder="Any extra details" />
+        <label for="notes">Notes (optional)</label>
+        <input id="notes" name="notes" placeholder="Any extra details" />
       </div>
 
+      <!-- الأزرار -->
       <div class="actions">
-        <button type="button" id="removeBtn" class="primary">Export / Deduct</button>
+        <!-- نخلي الزر submit عشان يشتغل مع الفورم -->
+        <button type="submit" id="exportBtn" class="primary">Export / Deduct</button>
         <button type="reset" class="muted">Reset</button>
         <a href="inventory.html" class="secondary">Inventory</a>
       </div>
 
-      <p class="hint">Deduction key: Product type + Code + Color + Size.</p>
+      <p class="hint">Deduction key: Product type + Code + Color + Size</p>
     </form>
   </main>
 

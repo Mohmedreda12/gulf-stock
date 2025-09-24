@@ -22,85 +22,95 @@
   </header>
 
   <main class="container">
-    <form id="importForm" class="card" autocomplete="off">
-      <div class="row">
-        <label>Product type</label>
-        <select id="productType" required>
-          <option value="Shirt">Shirt</option>
-          <option value="Pants">Pants</option>
-          <option value="Jacket">Jacket</option>
-          <option value="Coverall">Coverall</option>
-          <option value="Lapcod">Lapcod</option>
-        </select>
-      </div>
+  <form id="importForm" class="card" autocomplete="off">
+  <div class="row">
+    <label>Product type</label>
+    <select id="productType" name="productType" required>
+      <option value="Shirt">Shirt</option>
+      <option value="Pants">Pants</option>
+      <option value="Jacket">Jacket</option>
+      <option value="Coverall">Coverall</option>
+      <option value="Lapcod">Lapcod</option>
+    </select>
+  </div>
 
-      <div class="row">
-        <label>Internal code (e.g., S01, P10)</label>
-        <input id="code" placeholder="Enter code" />
-      </div>
+  <div class="row">
+    <label>Internal code (e.g., S01, P10)</label>
+    <input id="code" name="code" placeholder="Enter code" />
+  </div>
 
-      <div class="row">
-        <label>Color (optional)</label>
-        <select id="color">
-          <option value="">Select Color</option>
-          <option value="MID BLUE">MID BLUE</option>
-          <option value="LIGHT TAN">LIGHT TAN</option>
-          <option value="GREY">GREY</option>
-          <option value="SKY BLUE">SKY BLUE</option>
-          <option value="ROYAL BLUE">ROYAL BLUE</option>
-          <option value="LIGHT GREY">LIGHT GREY</option>
-          <option value="NAVY BLUE">NAVY BLUE</option>
-          <option value="BLACK">BLACK</option>
-          <option value="KHAKI">KHAKI</option>
-          <option value="WHITE">WHITE</option>
-          <option value="RED">RED</option>
-          <option value="BLUE">BLUE</option>
-        </select>
-      </div>
+  <div class="row">
+    <label>Color (optional)</label>
+    <select id="color" name="color">
+      <option value="">Select Color</option>
+      <option value="MID BLUE">MID BLUE</option>
+      <option value="LIGHT TAN">LIGHT TAN</option>
+      <option value="GREY">GREY</option>
+      <option value="SKY BLUE">SKY BLUE</option>
+      <option value="ROYAL BLUE">ROYAL BLUE</option>
+      <option value="LIGHT GREY">LIGHT GREY</option>
+      <option value="NAVY BLUE">NAVY BLUE</option>
+      <option value="BLACK">BLACK</option>
+      <option value="KHAKI">KHAKI</option>
+      <option value="WHITE">WHITE</option>
+      <option value="RED">RED</option>
+      <option value="BLUE">BLUE</option>
+    </select>
+  </div>
 
-      <div class="row">
-        <label>Fabric Type</label>
-        <select id="fabric">
-          <option value="">Select Fabric</option>
-          <option value="NOMEX">NOMEX</option>
-          <option value="COTTON">COTTON</option>
-          <option value="LENZING">LENZING</option>
-          <option value="NORMAL">NORMAL</option>
-          <option value="STRETCH">STRETCH</option>
-          <option value="ARC FLASH">ARC FLASH</option>
-          <option value="LENZING ARC FLASH">LENZING ARC FLASH</option>
-        </select>
-      </div>
+  <div class="row">
+    <label>Fabric Type</label>
+    <select id="fabric" name="fabric">
+      <option value="">Select Fabric</option>
+      <option value="NOMEX">NOMEX</option>
+      <option value="COTTON">COTTON</option>
+      <option value="LENZING">LENZING</option>
+      <option value="NORMAL">NORMAL</option>
+      <option value="STRETCH">STRETCH</option>
+      <option value="ARC FLASH">ARC FLASH</option>
+      <option value="LENZING ARC FLASH">LENZING ARC FLASH</option>
+    </select>
+  </div>
 
-      <div class="row">
-        <label>Size</label>
-        <!-- إدخال يدوي مع اقتراحات -->
-        <input id="size" placeholder="e.g. M, XL, 2XL or 36..60" required list="sizeHints" />
-        <datalist id="sizeHints">
-          <option value="M"><option value="L"><option value="XL">
-          <option value="2XL"><option value="3XL"><option value="4XL"><option value="5XL"><option value="6XL">
-          <option value="36"><option value="38"><option value="40"><option value="42"><option value="44"><option value="46"><option value="48"><option value="50"><option value="52"><option value="54"><option value="56"><option value="58"><option value="60">
-        </datalist>
-      </div>
+  <div class="row">
+    <label>Size</label>
+    <input id="size" name="size" placeholder="e.g. M, XL, 2XL or 36..60" required list="sizeHints" />
+    <datalist id="sizeHints">
+      <!-- حروف -->
+      <option value="M"><option value="L"><option value="XL">
+      <option value="2XL"><option value="3XL"><option value="4XL"><option value="5XL"><option value="6XL">
+      <!-- أرقام 4..34 -->
+      <option value="4"><option value="6"><option value="8"><option value="10">
+      <option value="12"><option value="14"><option value="16"><option value="18">
+      <option value="20"><option value="22"><option value="24"><option value="26">
+      <option value="28"><option value="30"><option value="32"><option value="34">
+      <!-- أرقام 36..60 -->
+      <option value="36"><option value="38"><option value="40"><option value="42">
+      <option value="44"><option value="46"><option value="48"><option value="50">
+      <option value="52"><option value="54"><option value="56"><option value="58"><option value="60">
+    </datalist>
+  </div>
 
-      <div class="row">
-        <label>Quantity</label>
-        <input id="qty" type="number" value="1" min="1" required />
-      </div>
+  <div class="row">
+    <label>Quantity</label>
+    <input id="qty" name="qty" type="number" value="1" min="1" required />
+  </div>
 
-      <div class="row">
-        <label>Notes (optional)</label>
-        <input id="notes" placeholder="Any extra details" />
-      </div>
+  <div class="row">
+    <label>Notes (optional)</label>
+    <input id="notes" name="notes" placeholder="Any extra details" />
+  </div>
 
-      <div class="actions">
-        <button type="button" id="addBtn" class="primary">Add</button>
-        <button type="reset" id="resetBtn" class="muted">Reset</button>
-        <a id="toInventory" href="inventory.html" class="secondary">Inventory</a>
-      </div>
+  <div class="actions">
+    <!-- خليه submit علشان حدث الفورم يشتغل -->
+    <button type="submit" id="addBtn" class="primary">Add</button>
+    <button type="reset" id="resetBtn" class="muted">Reset</button>
+    <a id="toInventory" href="inventory.html" class="secondary">Inventory</a>
+  </div>
 
-      <p class="hint">Data will be merged by: Product type + Code + Color + Size</p>
-    </form>
+  <p class="hint">Data will be merged by: Product type + Code + Color + Size</p>
+</form>
+
   </main>
 
   <div id="notifyRoot"></div>

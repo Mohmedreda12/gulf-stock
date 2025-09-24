@@ -1,44 +1,48 @@
-// common.js (type: module) — manual size input
-// Firestore
+// common.js (type: module) — forms-based submit handlers + fixes
 import { db } from './firebase.js';
 import {
   collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc
 } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // ===== DOM refs (may be null per page) =====
+  // ===== DOM refs (presence depends on page) =====
+  const importForm   = document.getElementById('importForm');
+  const exportForm   = document.getElementById('exportForm');
+
   const productType  = document.getElementById('productType');
-  const sizeInput    = document.getElementById('size');       // <-- input (not select)
+  const sizeInput    = document.getElementById('size');       // input (with datalist)
   const codeInput    = document.getElementById('code');
   const colorInput   = document.getElementById('color');
   const qtyInput     = document.getElementById('qty');
   const notesInput   = document.getElementById('notes');
   const fabricInput  = document.getElementById('fabric');
 
-  const addBtn       = document.getElementById('addBtn');       // import.html
-  const removeBtn    = document.getElementById('removeBtn');    // export.html
-
-  const inventoryList = document.getElementById('inventoryList'); // inventory.html
+  // inventory.html
+  const inventoryList = document.getElementById('inventoryList');
   const exportCsvBtn  = document.getElementById('exportCsv');
   const clearAllBtn   = document.getElementById('clearAll');
   const sortSelect    = document.getElementById('sortOptions');
   const fabricFilter  = document.getElementById('fabricFilter');
   const typeWrap      = document.querySelector('.type-filters');
 
-  // ===== Helpers: size normalization & validation =====
-  const ALLOWED_SIZES = new Set([
-    'M','L','XL','2XL','3XL','4XL','5XL','6XL'
-  ]);
-  // add numeric sizes 2..60
-  for (let i = 2; i <= 60; i++) ALLOWED_SIZES.add(String(i));
+  // ===== Helpers: digits, size normalization & validation =====
+  // تحويل الأرقام العربية/الهندية إلى لاتينية
+  const ARABIC_DIGITS = /[\u0660-\u0669\u06F0-\u06F9]/g;
+  function normalizeDigits(str = '') {
+    return String(str).replace(ARABIC_DIGITS, d =>
+      String('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(d) % 10)
+    );
+  }
+
+  const ALLOWED_SIZES = new Set(['M','L','XL','2XL','3XL','4XL','5XL','6XL']);
+  for (let i = 2; i <= 60; i++) ALLOWED_SIZES.add(String(i)); // يسمح 2..60
 
   function normalizeSize(raw) {
     if (!raw) return '';
-    // remove spaces (e.g. "2 XL" -> "2XL", "x l" -> "XL")
-    let s = String(raw).trim().toUpperCase().replace(/\s+/g, '');
-    // common typos
+    let s = normalizeDigits(raw).trim().toUpperCase().replace(/\s+/g, '');
+    // شائعة
     if (s === 'X' || s === 'XLARGE') s = 'XL';
-    if (s === 'SMALL') s = 'M'; // adjust if you use S later
+    if (s === 'SMALL') s = 'M'; // عدلها لو هتستخدم S
     return s;
   }
 
@@ -47,17 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
     return ALLOWED_SIZES.has(s);
   }
 
-  // live validation UI (optional)
+  // live validation UI (اختياري)
   if (sizeInput) {
     const mark = ok => {
       sizeInput.style.borderColor = ok ? '#28a745' : '#b22222';
       sizeInput.style.outline = 'none';
     };
-    sizeInput.addEventListener('input', () => mark(isValidSize(sizeInput.value)));
+    const updateMark = () => mark(isValidSize(sizeInput.value));
+    sizeInput.addEventListener('input', updateMark);
     sizeInput.addEventListener('blur', () => {
       const n = normalizeSize(sizeInput.value);
       if (ALLOWED_SIZES.has(n)) sizeInput.value = n;
-      mark(isValidSize(sizeInput.value));
+      updateMark();
     });
   }
 
@@ -97,14 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
     await deleteDoc(doc(db, 'inventory', key));
   }
 
-  // ===== Add (Import) =====
-  if (addBtn) {
-    addBtn.addEventListener('click', async () => {
+  // ===== Add (Import) — via form submit =====
+  if (importForm) {
+    importForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
       const type   = productType?.value;
-      const code   = (codeInput?.value || '').trim();
-      const color  = colorInput?.value || '';
+      const code   = normalizeDigits((codeInput?.value || '').trim()).toUpperCase();
+      const color  = (colorInput?.value || '').toUpperCase();
       const size   = normalizeSize(sizeInput?.value || '');
-      const qty    = Number(qtyInput?.value || 0);
+      const qty    = Number(normalizeDigits(qtyInput?.value || 0));
       const notes  = (notesInput?.value || '').trim();
       const fabric = (fabricInput?.value || '').toUpperCase();
 
@@ -114,10 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       await mergeAndAdd({ type, code, color, size, fabric, qty, notes });
-      toast('Added to inventory.');
-      document.getElementById('importForm')?.reset();
-      // keep normalized value visible
-      if (sizeInput) sizeInput.value = '';
+      toast('Added to inventory ✅');
+      importForm.reset();
+      if (sizeInput) sizeInput.value = ''; // لو كانت اتطبّعت
     });
   }
 
@@ -135,26 +141,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== Export (Subtract) =====
-  if (removeBtn) {
-    removeBtn.addEventListener('click', async () => {
+  // ===== Export (Subtract) — via form submit =====
+  if (exportForm) {
+    exportForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
       const type   = productType?.value;
-      const code   = (codeInput?.value || '').trim();
-      const color  = colorInput?.value || '';
+      const code   = normalizeDigits((codeInput?.value || '').trim()).toUpperCase();
+      const color  = (colorInput?.value || '').toUpperCase();
       const size   = normalizeSize(sizeInput?.value || '');
-      const qty    = Number(qtyInput?.value || 0);
+      const qty    = Number(normalizeDigits(qtyInput?.value || 0));
       const notes  = (notesInput?.value || '').trim();
       const fabric = (fabricInput?.value || '').toUpperCase();
 
-      if (qty <= 0 || !isValidSize(size)) {
-        alert('Enter valid Quantity and Size (M..6XL or 2..60).');
+      if (!type || qty <= 0 || !isValidSize(size)) {
+        alert('Enter valid Type, Quantity and Size (M..6XL or 2..60).');
         return;
       }
 
       const ok = await subtractFromInventory({ type, code, color, size, fabric, qty, notes });
       if (ok) {
-        toast('Quantity deducted.');
-        document.getElementById('exportForm')?.reset();
+        toast('Quantity deducted ✅');
+        exportForm.reset();
         if (sizeInput) sizeInput.value = '';
       }
     });
@@ -163,11 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
   async function subtractFromInventory(item) {
     const key = makeKey(item);
     const existing = await getByKey(key);
-    if (!existing) { alert('Item not found in inventory.'); return false; }
+    if (!existing) { alert('Item not found in inventory. Make sure Fabric matches too.'); return false; }
 
     const have = Number(existing.qty);
     const need = Number(item.qty);
-    if (need > have) { alert(`Insufficient quantity. Available now: ${have}`); return false; }
+    if (need > have) { alert(`Insufficient quantity. Available: ${have}`); return false; }
 
     const left = have - need;
     if (left <= 0) await deleteByKey(key);
@@ -208,7 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (sort === 'type') {
       all.sort((a, b) => (a.type || '').localeCompare(b.type || ''));
     } else if (sort === 'size') {
-      all.sort((a, b) => String(a.size || '').localeCompare(String(b.size || '')));
+      // يجعل الأحجام الرقمية تتفرز صح قبل الحروف
+      const rank = s => {
+        const n = Number(s);
+        return Number.isFinite(n) ? n : 1000 + String(s).charCodeAt(0);
+      };
+      all.sort((a, b) => rank(a.size) - rank(b.size));
     }
 
     const filtered = all.filter(it => {
@@ -218,8 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (filtered.length === 0) {
-      inventoryList.innerHTML = `<p>${(currentFilter || currentFabric) ? 'No items for this filter.' 
-        : 'Inventory is empty.'}</p>`;
+      inventoryList.innerHTML = `<p>${(currentFilter || currentFabric) ? 
+        'No items for this filter.' : 'Inventory is empty.'}</p>`;
       return;
     }
 
@@ -275,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const inv = await getAll();
       if (inv.length === 0) { alert('No data to export.'); return; }
       const header = ['type','code','color','size','fabric','qty','notes','addedAt'];
-      const rows = inv.map(i => header.map(h => (i[h] || '').toString().replace(/"/g, '""')));
+      const rows = inv.map(i => header.map(h => (i[h] ?? '').toString().replace(/"/g, '""')));
       const csv = [header.join(',')].concat(rows.map(r => '"' + r.join('","') + '"')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -297,11 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== Toast =====
+  // ===== Toast (fixed) =====
   function toast(msg){
     const root = document.getElementById('notifyRoot');
     if(!root) return;
-    root.innerHTML = <div class="notify-badge"><span class="msg">${msg}</span></div>;
+    root.innerHTML = `
+      <div class="notify-badge"><span class="msg">${msg}</span></div>
+    `;
     root.classList.add('show');
     setTimeout(()=>root.classList.remove('show'), 1200);
   }
