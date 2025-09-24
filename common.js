@@ -1,16 +1,13 @@
-// common.js (type: module) — forms-based submit handlers + fixes
-import { db } from './firebase.js';
-import {
-  collection, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc
-} from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+// common.js (type: module) — يعمل مع Supabase
+import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // ===== DOM refs (presence depends on page) =====
+  // ===== DOM refs =====
   const importForm   = document.getElementById('importForm');
   const exportForm   = document.getElementById('exportForm');
 
   const productType  = document.getElementById('productType');
-  const sizeInput    = document.getElementById('size');       // input (with datalist)
+  const sizeInput    = document.getElementById('size');
   const codeInput    = document.getElementById('code');
   const colorInput   = document.getElementById('color');
   const qtyInput     = document.getElementById('qty');
@@ -25,8 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fabricFilter  = document.getElementById('fabricFilter');
   const typeWrap      = document.querySelector('.type-filters');
 
-  // ===== Helpers: digits, size normalization & validation =====
-  // تحويل الأرقام العربية/الهندية إلى لاتينية
+  // ===== Helpers: digits + size =====
   const ARABIC_DIGITS = /[\u0660-\u0669\u06F0-\u06F9]/g;
   function normalizeDigits(str = '') {
     return String(str).replace(ARABIC_DIGITS, d =>
@@ -35,74 +31,104 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const ALLOWED_SIZES = new Set(['M','L','XL','2XL','3XL','4XL','5XL','6XL']);
-  for (let i = 2; i <= 60; i++) ALLOWED_SIZES.add(String(i)); // يسمح 2..60
+  for (let i = 2; i <= 60; i++) ALLOWED_SIZES.add(String(i));
 
   function normalizeSize(raw) {
     if (!raw) return '';
     let s = normalizeDigits(raw).trim().toUpperCase().replace(/\s+/g, '');
-    // شائعة
     if (s === 'X' || s === 'XLARGE') s = 'XL';
-    if (s === 'SMALL') s = 'M'; // عدلها لو هتستخدم S
+    if (s === 'SMALL') s = 'M';
     return s;
   }
+  function isValidSize(raw) { return ALLOWED_SIZES.has(normalizeSize(raw)); }
 
-  function isValidSize(raw) {
-    const s = normalizeSize(raw);
-    return ALLOWED_SIZES.has(s);
-  }
-
-  // live validation UI (اختياري)
+  // live mark
   if (sizeInput) {
-    const mark = ok => {
-      sizeInput.style.borderColor = ok ? '#28a745' : '#b22222';
-      sizeInput.style.outline = 'none';
-    };
-    const updateMark = () => mark(isValidSize(sizeInput.value));
-    sizeInput.addEventListener('input', updateMark);
+    const mark = ok => { sizeInput.style.borderColor = ok ? '#28a745' : '#b22222'; };
+    const upd = () => mark(isValidSize(sizeInput.value));
+    sizeInput.addEventListener('input', upd);
     sizeInput.addEventListener('blur', () => {
       const n = normalizeSize(sizeInput.value);
       if (ALLOWED_SIZES.has(n)) sizeInput.value = n;
-      updateMark();
+      upd();
     });
   }
 
-  // ===== Firestore helpers =====
-  const col = collection(db, 'inventory');
-
+  // ===== Supabase helpers (بديل Firestore) =====
   function makeKey(item) {
     return [
       item.type || '',
       item.code ? item.code.toUpperCase() : '',
       item.color ? item.color.toUpperCase() : '',
       item.size ? String(item.size).toUpperCase() : '',
-      item.fabric ? item.fabric.toUpperCase() : ''
+      item.fabric ? item.fabric.toUpperCase() : '',
     ].join('|');
   }
 
   async function getAll() {
-    const snap = await getDocs(col);
-    return snap.docs.map(d => {
-      const data = d.data();
-      return { id: d.id, _key: data._key || d.id, ...data };
-    });
+    const { data, error } = await supabase.from('inventory').select('*');
+    if (error) { console.error('getAll:', error.message); return []; }
+    return (data || []).map(d => ({ _key: d._key || makeKey(d), ...d }));
   }
 
   async function getByKey(key) {
-    const ref = doc(db, 'inventory', key);
-    const snap = await getDoc(ref);
-    return snap.exists() ? snap.data() : null;
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('_key', key)
+      .maybeSingle();
+    if (error) { console.error('getByKey:', error.message); return null; }
+    return data || null;
   }
 
   async function upsert(item) {
     const key = makeKey(item);
-    await setDoc(doc(db, 'inventory', key), { ...item, _key: key }, { merge: true });
+    const payload = { ...item, _key: key };
+    const { error } = await supabase
+      .from('inventory')
+      .upsert(payload, { onConflict: '_key' });
+    if (error) throw new Error(error.message);
   }
 
   async function deleteByKey(key) {
-    await deleteDoc(doc(db, 'inventory', key));
+    const { error } = await supabase.from('inventory').delete().eq('_key', key);
+    if (error) throw new Error(error.message);
   }
 
-  // ===== Add (Import) — via form submit =====
+  async function updateQtyByKey(key, qty) {
+    const { error } = await supabase.from('inventory').update({ qty }).eq('_key', key);
+    if (error) throw new Error(error.message);
+  }
+
+  async function mergeAndAdd(item) {
+    const key = makeKey(item);
+    const existing = await getByKey(key);
+    const qty = (existing ? Number(existing.qty) : 0) + Number(item.qty || 0);
+    await upsert({
+      ...existing,
+      ...item,
+      _key: key,
+      qty,
+      addedat: existing?.addedat || new Date().toISOString(),
+    });
+  }
+
+  async function subtractFromInventory(item) {
+    const key = makeKey(item);
+    const existing = await getByKey(key);
+    if (!existing) { alert('Item not found. (Check Fabric/Size/Color/Code)'); return false; }
+
+    const have = Number(existing.qty);
+    const need = Number(item.qty);
+    if (need > have) { alert(`Insufficient quantity. Available: ${have}`); return false; }
+
+    const left = have - need;
+    if (left <= 0) await deleteByKey(key);
+    else await updateQtyByKey(key, left);
+    return true;
+  }
+
+  // ===== Add (Import) =====
   if (importForm) {
     importForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -116,32 +142,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const fabric = (fabricInput?.value || '').toUpperCase();
 
       if (!type || qty <= 0 || !isValidSize(size)) {
-        alert('Please enter a valid Type, Size (M..6XL or 2..60), and Quantity > 0.');
+        alert('Please enter valid Type, Size (M..6XL or 2..60) and Quantity > 0.');
         return;
       }
 
-      await mergeAndAdd({ type, code, color, size, fabric, qty, notes });
-      toast('Added to inventory ✅');
-      importForm.reset();
-      if (sizeInput) sizeInput.value = ''; // لو كانت اتطبّعت
+      try {
+        await mergeAndAdd({ type, code, color, size, fabric, qty, notes });
+        toast('Added to inventory ✅');
+        importForm.reset();
+        if (sizeInput) sizeInput.value = '';
+      } catch (err) {
+        console.error('ADD failed:', err);
+        alert('ADD failed: ' + (err?.message || err));
+      }
     });
   }
 
-  async function mergeAndAdd(item) {
-    const key = makeKey(item);
-    const existing = await getByKey(key);
-    const qty = (existing ? Number(existing.qty) : 0) + Number(item.qty || 0);
-
-    await upsert({
-      ...existing,
-      ...item,
-      _key: key,
-      qty,
-      addedAt: existing?.addedAt || new Date().toISOString()
-    });
-  }
-
-  // ===== Export (Subtract) — via form submit =====
+  // ===== Export (Subtract) =====
   if (exportForm) {
     exportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -154,40 +171,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const notes  = (notesInput?.value || '').trim();
       const fabric = (fabricInput?.value || '').toUpperCase();
 
-      if (!type || qty <= 0 || !isValidSize(size)) {
-        alert('Enter valid Type, Quantity and Size (M..6XL or 2..60).');
+      if (qty <= 0 || !isValidSize(size)) {
+        alert('Enter valid Quantity and Size (M..6XL or 2..60).');
         return;
       }
 
-      const ok = await subtractFromInventory({ type, code, color, size, fabric, qty, notes });
-      if (ok) {
-        toast('Quantity deducted ✅');
-        exportForm.reset();
-        if (sizeInput) sizeInput.value = '';
+      try {
+        const ok = await subtractFromInventory({ type, code, color, size, fabric, qty, notes });
+        if (ok) {
+          toast('Quantity deducted ✅');
+          exportForm.reset();
+          if (sizeInput) sizeInput.value = '';
+        }
+      } catch (err) {
+        console.error('DEDUCT failed:', err);
+        alert('DEDUCT failed: ' + (err?.message || err));
       }
     });
-  }
-
-  async function subtractFromInventory(item) {
-    const key = makeKey(item);
-    const existing = await getByKey(key);
-    if (!existing) { alert('Item not found in inventory. Make sure Fabric matches too.'); return false; }
-
-    const have = Number(existing.qty);
-    const need = Number(item.qty);
-    if (need > have) { alert(`Insufficient quantity. Available: ${have}`); return false; }
-
-    const left = have - need;
-    if (left <= 0) await deleteByKey(key);
-    else await updateDoc(doc(db, 'inventory', key), { qty: left });
-
-    return true;
   }
 
   // ===== Filters (inventory.html) =====
   let currentFilter = '';
   let currentFabric = '';
-
   if (typeWrap) {
     typeWrap.querySelectorAll('.chip').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -205,18 +210,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== Render inventory (inventory.html) =====
+  // ===== Render inventory =====
   async function renderInventory() {
     if (!inventoryList) return;
-
     let all = await getAll();
+
     const sort = sortSelect?.value || '';
     if (sort === 'date') {
-      all.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+      all.sort((a, b) => new Date(b.addedat || 0) - new Date(a.addedat || 0));
     } else if (sort === 'type') {
       all.sort((a, b) => (a.type || '').localeCompare(b.type || ''));
     } else if (sort === 'size') {
-      // يجعل الأحجام الرقمية تتفرز صح قبل الحروف
       const rank = s => {
         const n = Number(s);
         return Number.isFinite(n) ? n : 1000 + String(s).charCodeAt(0);
@@ -231,8 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (filtered.length === 0) {
-      inventoryList.innerHTML = `<p>${(currentFilter || currentFabric) ? 
-        'No items for this filter.' : 'Inventory is empty.'}</p>`;
+      inventoryList.innerHTML = `<p>${(currentFilter || currentFabric) ? 'No items for this filter.' 
+        : 'Inventory is empty.'}</p>`;
       return;
     }
 
@@ -246,9 +250,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <small>Qty: ${Number(it.qty)}${it.notes ? ' • ' + it.notes : ''}${it.fabric ? ' • ' + it.fabric : ''}</small>
         </div>
         <div class="actions">
-          <button class="muted"  data-action="dec" data-key="${it._key || it.id}">-1</button>
-          <button class="muted"  data-action="inc" data-key="${it._key || it.id}">+1</button>
-          <button class="danger" data-action="del" data-key="${it._key || it.id}">Delete</button>
+          <button class="muted"  data-action="dec" data-key="${it._key}">-1</button>
+          <button class="muted"  data-action="inc" data-key="${it._key}">+1</button>
+          <button class="danger" data-action="del" data-key="${it._key}">Delete</button>
         </div>
       `;
       inventoryList.appendChild(div);
@@ -260,15 +264,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const key    = btn.getAttribute('data-key');
         if (!key) return;
 
-        const item = (await getAll()).find(x => (x._key || x.id) === key);
+        const item = (await getAll()).find(x => (x._key) === key);
         if (!item) return;
 
         if (action === 'inc') {
-          await updateDoc(doc(db, 'inventory', key), { qty: Number(item.qty) + 1 });
+          await updateQtyByKey(key, Number(item.qty) + 1);
         } else if (action === 'dec') {
           const left = Math.max(0, Number(item.qty) - 1);
           if (left === 0) await deleteByKey(key);
-          else await updateDoc(doc(db, 'inventory', key), { qty: left });
+          else await updateQtyByKey(key, left);
         } else if (action === 'del') {
           await deleteByKey(key);
         }
@@ -287,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     exportCsvBtn.addEventListener('click', async () => {
       const inv = await getAll();
       if (inv.length === 0) { alert('No data to export.'); return; }
-      const header = ['type','code','color','size','fabric','qty','notes','addedAt'];
+      const header = ['type','code','color','size','fabric','qty','notes','addedat'];
       const rows = inv.map(i => header.map(h => (i[h] ?? '').toString().replace(/"/g, '""')));
       const csv = [header.join(',')].concat(rows.map(r => '"' + r.join('","') + '"')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -299,18 +303,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== Clear All from cloud =====
+  // ===== Clear All =====
   if (clearAllBtn) {
     clearAllBtn.addEventListener('click', async () => {
       if (!confirm('Clear ALL inventory from cloud?')) return;
       const all = await getAll();
-      await Promise.all(all.map(x => deleteByKey(x._key || x.id)));
+      await Promise.all(all.map(x => deleteByKey(x._key)));
       renderInventory();
       alert('Inventory cleared.');
     });
   }
 
-  // ===== Toast (fixed) =====
+  // ===== Toast =====
   function toast(msg){
     const root = document.getElementById('notifyRoot');
     if(!root) return;
@@ -318,6 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="notify-badge"><span class="msg">${msg}</span></div>
     `;
     root.classList.add('show');
-    setTimeout(()=>root.classList.remove('show'), 1200);
+    setTimeout(() => root.classList.remove('show'), 1200);
   }
 });
