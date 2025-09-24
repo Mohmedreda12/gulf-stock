@@ -6,10 +6,10 @@
   <title>Inventory — Inventory List</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
-  if(localStorage.getItem('loggedIn') !== 'true') {
-    window.location.href = 'login.html';
-  }
-</script>
+    if (localStorage.getItem('loggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -19,54 +19,51 @@
       <a href="import.html" class="btn">Add Item</a>
     </nav>
   </header>
-<main class="container">
-  <section class="card">
-    <div class="inventory-controls" style="flex-direction: column; gap: 10px;">
 
-      <!-- ===== أزرار الفلترة ===== -->
-      <div class="type-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
-        <button class="chip active" data-filter="">All</button>
-        <button class="chip" data-filter="Shirt">Shirt</button>
-        <button class="chip" data-filter="Pants">Pants</button>
-        <button class="chip" data-filter="Jacket">Jacket</button>
-        <button class="chip" data-filter="Coverall">Coverall</button>
-        <button class="chip" data-filter="Lapcod">lapcod</button>
-      </div>
+  <main class="container">
+    <section class="card">
+      <div class="inventory-controls" style="flex-direction: column; gap: 10px;">
 
-      <!-- ===== أزرار التصدير والفرز ===== -->
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button id="exportCsv" class="primary">Export CSV</button>
+        <!-- نوع المنتج -->
+        <div class="type-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button class="chip active" data-filter="">All</button>
+          <button class="chip" data-filter="Shirt">Shirt</button>
+          <button class="chip" data-filter="Pants">Pants</button>
+          <button class="chip" data-filter="Jacket">Jacket</button>
+          <button class="chip" data-filter="Coverall">Coverall</button>
+          <button class="chip" data-filter="Lapcod">Lapcod</button>
+        </div>
 
-        <select id="sortOptions" class="muted" style="padding:8px; border-radius:8px;">
-          <option value="">Sort By</option>
-          <option value="date">Date (Newest First)</option>
-          <option value="type">Product Type</option>
-          <option value="size">Size</option>
+        <!-- تصدير وفرز -->
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="exportCsv" class="primary">Export CSV</button>
+          <select id="sortOptions" class="muted" style="padding:8px; border-radius:8px;">
+            <option value="">Sort By</option>
+            <option value="date">Date (Newest First)</option>
+            <option value="type">Product Type</option>
+            <option value="size">Size</option>
+          </select>
+        </div>
+
+        <!-- فلتر القماش (قيم UPPERCASE) -->
+        <select id="fabricFilter" class="muted" style="padding:6px; border-radius:8px; margin-top:8px;">
+          <option value="">Select Fabric</option>
+          <option value="NOMEX">Nomex</option>
+          <option value="COTTON">Cotton</option>
+          <option value="LENZING">Lenzing</option>
+          <option value="NORMAL">Normal</option>
+          <option value="STRETCH">Stretch</option>
+          <option value="ARC FLASH">Arc Flash</option>
+          <option value="LENZING ARC FLASH">Lenzing Arc Flash</option>
         </select>
+
+        <button id="clearAll" class="danger">Clear Inventory</button>
       </div>
-      <select id="fabricFilter" class="muted" style="padding:6px; border-radius:8px; margin-top:8px;">
-  <option value="">Select Fabric</option>
-  <option value="Nomex">Nomex</option>
-  <option value="Cotton">Cotton</option>
-  <option value="Lenzing">Lenzing</option>
-  <option value="Normal">Normal</option>
-  <option value="Stretch">Stretch</option>
-  <option value="Arc Flash">Arc Flash</option>
-  <option value="Lenzing Arc Flash">Lenzing Arc Flash</option>
-</select>
 
-      <!-- ===== زر مسح المخزن ===== -->
-      <button id="clearAll" class="danger">Clear Inventory</button>
+      <div id="inventoryList"></div>
+    </section>
+  </main>
 
-    </div>
-
-    <!-- ===== قائمة المخزن ===== -->
-    <div id="inventoryList"></div>
-  </section>
-</main>
-
-
-  <!-- ===== Modal for PIN Confirmation ===== -->
   <div id="pinModal" class="modal">
     <div class="modal-content">
       <h2>Confirm Action</h2>
@@ -79,9 +76,8 @@
     </div>
   </div>
 
-
   <div id="notifyRoot"></div>
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/common.js"></script>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/common.js"></script>
 </body>
 </html>

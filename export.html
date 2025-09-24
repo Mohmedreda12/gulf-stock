@@ -6,10 +6,10 @@
   <title>Export from Inventory</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
-  if(localStorage.getItem('loggedIn') !== 'true') {
-    window.location.href = 'login.html';
-  }
-</script>
+    if (localStorage.getItem('loggedIn') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -30,51 +30,60 @@
           <option value="Pants">Pants</option>
           <option value="Jacket">Jacket</option>
           <option value="Coverall">Coverall</option>
-           <option value="Lapcod">Lapcod</option>
+          <option value="Lapcod">Lapcod</option>
         </select>
       </div>
 
       <div class="row">
         <label>Internal code (e.g., S01, P10)</label>
         <input id="code" placeholder="Enter code" />
-</div>
       </div>
 
-     <div class="row">
-  <label>Color (optional)</label>
-  <select id="color" required>
-    <option value="">Select Color</option>
-    <option value="M.BLUE">M.BLUE</option>
-    <option value="LIT TAN">LIT TAN</option>
-    <option value="GREY">GREY</option>
-    <option value="SKY BLUE">SKY BLUE</option>
-    <option value="ROYAL BLUE">ROYAL BLUE</option>
-    <option value="LIT GREY">LIT GREY</option>
-    <option value="NAVY BLUE">NAVY BLUE</option>
-    <option value="BLACK">BLACK</option>
-    <option value="KHAKHI">KHAKHI</option>
-    <option value="WHITE">WHITE</option>
-    <option value="RED">RED</option>
-    <option value="BLUE">BLUE</option>
-  </select>
-</div>
+      <div class="row">
+        <label>Color (optional)</label>
+        <select id="color">
+          <option value="">Select Color</option>
+          <option value="MID BLUE">MID BLUE</option>
+          <option value="LIGHT TAN">LIGHT TAN</option>
+          <option value="GREY">GREY</option>
+          <option value="SKY BLUE">SKY BLUE</option>
+          <option value="ROYAL BLUE">ROYAL BLUE</option>
+          <option value="LIGHT GREY">LIGHT GREY</option>
+          <option value="NAVY BLUE">NAVY BLUE</option>
+          <option value="BLACK">BLACK</option>
+          <option value="KHAKI">KHAKI</option>
+          <option value="WHITE">WHITE</option>
+          <option value="RED">RED</option>
+          <option value="BLUE">BLUE</option>
+        </select>
+      </div>
 
-<div class="row">
-  <label>Fabric Type</label>
-  <select id="fabric">
-    <option value="">Select Fabric</option>
-    <option value="NOMEX">NOMEX</option>
-    <option value="COTTON">COTTON</option>
-    <option value="LENZING">LENZING</option>
-    <option value="NORMAL">NORMAL</option>
-    <option value="STRETCH">STRETCH</option>
-    <option value="ARC FLASH">ARC FLASH</option>
-    <option value="LENZING ARC FLASH">LENZING ARC FLASH</option>
-  </select>
-</div>
+      <div class="row">
+        <label>Fabric Type</label>
+        <select id="fabric">
+          <option value="">Select Fabric</option>
+          <option value="NOMEX">NOMEX</option>
+          <option value="COTTON">COTTON</option>
+          <option value="LENZING">LENZING</option>
+          <option value="NORMAL">NORMAL</option>
+          <option value="STRETCH">STRETCH</option>
+          <option value="ARC FLASH">ARC FLASH</option>
+          <option value="LENZING ARC FLASH">LENZING ARC FLASH</option>
+        </select>
+      </div>
+
       <div class="row">
         <label>Size</label>
-        <select id="size" required></select>
+        <!-- إدخال يدوي مع اقتراحات -->
+        <input id="size" placeholder="e.g. M, XL, 2XL or 36..60" required list="sizeHints" />
+        <datalist id="sizeHints">
+          <option value="M"><option value="L"><option value="XL">
+          <option value="2XL"><option value="3XL"><option value="4XL"><option value="5XL"><option value="6XL">
+          <option value="36"><option value="38"><option value="40"><option value="42"><option value="44">
+            <option value="46"><option value="48"><option value="50"><option value="52"><option value="54">
+                <option value="56"><option value="58"><option value="60">
+
+        </datalist>
       </div>
 
       <div class="row">
@@ -97,9 +106,10 @@
     </form>
   </main>
 
+  <div id="notifyRoot"></div>
 
-    <div id="notifyRoot"></div>
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/common.js"></script>
+  <!-- ترتيب السكربتات مهم -->
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/common.js"></script>
 </body>
 </html>
